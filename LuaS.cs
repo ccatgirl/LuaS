@@ -7,14 +7,16 @@
 //reference System.Net.Sockets.dll
 //reference NLua.dll
 
+using MCGalaxy.Games;
+using MCGalaxy.Network;
+using MCGalaxy.Blocks.Physics;
 using MCGalaxy.Events;
+using MCGalaxy.Events.GameEvents;
 using MCGalaxy.Events.GroupEvents;
 using MCGalaxy.Events.LevelEvents;
 using MCGalaxy.Events.PlayerDBEvents;
 using MCGalaxy.Events.PlayerEvents;
 using MCGalaxy.Events.ServerEvents;
-using MCGalaxy.Network;
-using MCGalaxy.Blocks.Physics;
 using BlockID = System.UInt16;
 using System;
 using System.IO;
@@ -44,7 +46,11 @@ namespace MCGalaxy {
                 private List<LuaTable> plugins;  
    
 		public override void Load(bool startup) {
- 
+
+                    #region Games register
+                    OnStateChangedEvent.Register(HandleStateChanged, Priority.Critical);
+                    OnMapsChangedEvent.Register(HandleMapsChanged, Priority.Critical);
+                    #endregion Games register
                     #region Group register 
                     OnGroupLoadedEvent.Register(HandleGroupLoaded, Priority.Critical);
                     OnGroupLoadEvent.Register(HandleGroupLoad, Priority.Critical); 
@@ -164,6 +170,17 @@ namespace MCGalaxy {
                     this.Call("load", startup);
                 }
 
+                #region Game
+                
+                void HandleStateChanged(IGame game) {
+                    this.Call("onStateChanged", game);
+                }
+
+                void HandleMapsChanged(RoundsGame game) {
+                    this.Call("onMapsChanged", game);
+                }
+
+                #endregion Game
                 #region Group
 
                 void HandleGroupLoaded(Group g) {
@@ -453,6 +470,10 @@ namespace MCGalaxy {
                     Command.Unregister(Command.Find("RunLua"));
                     Command.Unregister(Command.Find("Lua")); 
 
+                    #region Games unregister
+                    OnStateChangedEvent.Unregister(HandleStateChanged);
+                    OnMapsChangedEvent.Unregister(HandleMapsChanged);
+                    #endregion Games unregister
                     #region Group unregister
                     OnGroupLoadedEvent.Unregister(HandleGroupLoaded);
                     OnGroupLoadEvent.Unregister(HandleGroupLoad);

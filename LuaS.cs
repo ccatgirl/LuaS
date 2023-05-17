@@ -8,10 +8,12 @@
 //reference NLua.dll
 
 using MCGalaxy.Events;
+using MCGalaxy.Events.LevelEvents;
 using MCGalaxy.Events.PlayerDBEvents;
 using MCGalaxy.Events.PlayerEvents;
 using MCGalaxy.Events.ServerEvents;
 using MCGalaxy.Network;
+using MCGalaxy.Blocks.Physics;
 using BlockID = System.UInt16;
 using System;
 using System.IO;
@@ -41,7 +43,28 @@ namespace MCGalaxy {
                 private List<LuaTable> plugins; 
 
 		public override void Load(bool startup) {
-                  
+                   
+                    #region Level register
+                    OnLevelLoadedEvent.Register(HandleLevelLoaded, Priority.Critical);
+                    OnLevelLoadEvent.Register(HandleLevelLoad, Priority.Critical);
+                    
+                    OnLevelSaveEvent.Register(HandleLevelSave, Priority.Critical);
+                    
+                    OnLevelUnloadEvent.Register(HandleLevelUnload, Priority.Critical);
+                    
+                    OnLevelAddedEvent.Register(HandleLevelAdded, Priority.Critical);
+                    OnLevelRemovedEvent.Register(HandleLevelRemoved, Priority.Critical);
+                    
+                    OnPhysicsStateChangedEvent.Register(HandlePhysicsStateChanged, Priority.Critical);
+                    OnPhysicsUpdateEvent.Register(HandlePhysicsUpdate, Priority.Critical);
+                    
+                    OnLevelRenamedEvent.Register(HandleLevelRenamed, Priority.Critical);
+                    OnLevelCopiedEvent.Register(HandleLevelCopied, Priority.Critical);
+                    OnLevelDeletedEvent.Register(HandleLevelDeleted, Priority.Critical);
+
+                    OnBlockHandlersUpdatedEvent.Register(HandleBlockHandlersUpdated, Priority.Critical);
+                    //OnMainLevelChangingEvent.Register(HandleMainLevelChanging, Priority.Critical); //TODO: Once MCGalaxy upgrades, update this event
+                    #endregion Level register
                     #region ModAction register
                     OnModActionEvent.Register(HandleModAction, Priority.Critical);
                     #endregion ModAction register
@@ -133,7 +156,73 @@ namespace MCGalaxy {
 
                     this.Call("load", startup);
                 }
+                #region Level
 
+                void HandleLevelLoaded(Level lvl) {
+                    this.Call("onLevelLoaded", lvl);
+                }
+
+                void HandleLevelLoad(string name, string path, ref bool cancel) {
+                    LuaContainer cancel_c = new LuaContainer((object) cancel);
+                    this.Call("onLevelLoad", name, path, cancel_c);
+                    cancel = (bool) cancel_c.contained;
+                }
+
+                void HandleLevelSave(Level lvl, ref bool cancel) {
+                    LuaContainer cancel_c = new LuaContainer((object) cancel);
+                    this.Call("onLevelSave", lvl, cancel_c);
+                    cancel = (bool) cancel_c.contained;
+                }
+
+                void HandleLevelUnload(Level lvl, ref bool cancel) {
+                    LuaContainer cancel_c = new LuaContainer((object) cancel);
+                    this.Call("onLevelUnload", lvl, cancel_c);
+                    cancel = (bool) cancel_c.contained;
+                }
+
+                void HandleLevelAdded(Level lvl) {
+                    this.Call("onLevelAdded", lvl);
+                }
+
+                void HandleLevelRemoved(Level lvl) {
+                    this.Call("onLevelRemoved", lvl);
+                }
+
+                void HandlePhysicsStateChanged(Level lvl, PhysicsState state) {
+                    this.Call("onPhysicsStateChanged", lvl, state);
+                }
+
+                void HandlePhysicsLevelChanged(Level lvl, int level) {
+                    this.Call("onPhysicsLevelChanged", lvl, level);
+                }
+
+                void HandlePhysicsUpdate(ushort x, ushort y, ushort z, PhysicsArgs args, Level lvl)  {
+                    this.Call("onPhysicsUpdate", x, y, z, args, lvl);
+                }
+
+                void HandleLevelRenamed(string srcMap, string dstMap) {
+                    this.Call("onLevelRenamed", srcMap, dstMap);
+                }
+
+                void HandleLevelCopied(string srcMap, string dstMap) {
+                    this.Call("onLevelCopied", srcMap, dstMap);
+                }
+
+                void HandleLevelDeleted(string map) {
+                    this.Call("onLevelDeleted", map);
+                }
+
+                void HandleBlockHandlersUpdated(Level lvl, BlockID block) {
+                    this.Call("onBlockHandlersUpdated", lvl, block);
+                }
+
+                void HandleMainLevelChanging(ref string map) {
+                    LuaContainer map_c = new LuaContainer((object) map);
+                    this.Call("onMainLevelChanging", map_c);
+                    map = (string) map_c.contained;
+                }
+
+                #endregion Level
                 #region ModAction
 
                 void HandleModAction(ModAction e) {
@@ -333,8 +422,28 @@ namespace MCGalaxy {
 
 		public override void Unload(bool shutdown) {
                     Command.Unregister(Command.Find("RunLua"));
-                    Command.Unregister(Command.Find("Lua"));
+                    Command.Unregister(Command.Find("Lua")); 
+                    #region Level unregister
+                    OnLevelLoadedEvent.Unregister(HandleLevelLoaded);
+                    OnLevelLoadEvent.Unregister(HandleLevelLoad);
                     
+                    OnLevelSaveEvent.Unregister(HandleLevelSave);
+                    
+                    OnLevelUnloadEvent.Unregister(HandleLevelUnload);
+                    
+                    OnLevelAddedEvent.Unregister(HandleLevelAdded);
+                    OnLevelRemovedEvent.Unregister(HandleLevelRemoved);
+                    
+                    OnPhysicsStateChangedEvent.Unregister(HandlePhysicsStateChanged);
+                    OnPhysicsUpdateEvent.Unregister(HandlePhysicsUpdate);
+                    
+                    OnLevelRenamedEvent.Unregister(HandleLevelRenamed);
+                    OnLevelCopiedEvent.Unregister(HandleLevelCopied);
+                    OnLevelDeletedEvent.Unregister(HandleLevelDeleted);
+
+                    OnBlockHandlersUpdatedEvent.Unregister(HandleBlockHandlersUpdated);
+                    //OnMainLevelChangingEvent.Unregister(HandleMainLevelChanging); //TODO: Once MCGalaxy upgrades, update this event
+                    #endregion Level unregister
                     #region ModAction unregister
                     OnModActionEvent.Unregister(HandleModAction);
                     #endregion ModAction unregister

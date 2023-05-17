@@ -8,6 +8,7 @@
 //reference NLua.dll
 
 using MCGalaxy.Events;
+using MCGalaxy.Events.GroupEvents;
 using MCGalaxy.Events.LevelEvents;
 using MCGalaxy.Events.PlayerDBEvents;
 using MCGalaxy.Events.PlayerEvents;
@@ -40,10 +41,16 @@ namespace MCGalaxy {
 		public override string creator { get { return "[MCGalaxy] With Grapes"; } }
                 
                 private Lua state;
-                private List<LuaTable> plugins; 
-
+                private List<LuaTable> plugins;  
+   
 		public override void Load(bool startup) {
-                   
+ 
+                    #region Group register 
+                    OnGroupLoadedEvent.Register(HandleGroupLoaded, Priority.Critical);
+                    OnGroupLoadEvent.Register(HandleGroupLoad, Priority.Critical); 
+                    OnGroupSaveEvent.Register(HandleGroupSave, Priority.Critical); 
+                    OnChangingGroupEvent.Register(HandleChangingGroup, Priority.Critical);
+                    #endregion Group register
                     #region Level register
                     OnLevelLoadedEvent.Register(HandleLevelLoaded, Priority.Critical);
                     OnLevelLoadEvent.Register(HandleLevelLoad, Priority.Critical);
@@ -156,6 +163,28 @@ namespace MCGalaxy {
 
                     this.Call("load", startup);
                 }
+
+                #region Group
+
+                void HandleGroupLoaded(Group g) {
+                    this.Call("groupLoaded", g);
+                }
+
+                void HandleGroupLoad() {
+                    this.Call("groupLoad");
+                }
+
+                void HandleGroupSave() {
+                    this.Call("groupSave");
+                }
+
+                void HandleChangingGroup(string player, Group curRank, Group newRank, ref bool cancel) {
+                    LuaContainer cancel_c = new LuaContainer((object) cancel);
+                    this.Call("onChangingGroup", player, curRank, newRank, cancel_c);
+                    cancel = (bool) cancel_c.contained;
+                }
+
+                #endregion Group
                 #region Level
 
                 void HandleLevelLoaded(Level lvl) {
@@ -423,6 +452,13 @@ namespace MCGalaxy {
 		public override void Unload(bool shutdown) {
                     Command.Unregister(Command.Find("RunLua"));
                     Command.Unregister(Command.Find("Lua")); 
+
+                    #region Group unregister
+                    OnGroupLoadedEvent.Unregister(HandleGroupLoaded);
+                    OnGroupLoadEvent.Unregister(HandleGroupLoad);
+                    OnGroupSaveEvent.Unregister(HandleGroupSave);
+                    OnChangingGroupEvent.Unregister(HandleChangingGroup);
+                    #endregion Group unregister
                     #region Level unregister
                     OnLevelLoadedEvent.Unregister(HandleLevelLoaded);
                     OnLevelLoadEvent.Unregister(HandleLevelLoad);

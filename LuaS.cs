@@ -1,6 +1,24 @@
 /*
  * This plugin will let you write MCGalaxy plugins and commands using Lua.
+ * 
+ * Plugins written in Lua contain many caveats and work-arounds
+ * because of how MCGalaxy's and NLua's APIs are made.
  *
+ * What you would usually use as a reference/pointer is
+ * a C# class because NLua does not support references and needs
+ * "containers". To edit the container values you access the container's
+ * .contained property.
+ *
+ * Lua functions are not C# functions and therefore cannot be used to
+ * register event functions. The work-around for that is to define functions
+ * for each plugin. They follow the C# API's naming with the exception of them
+ * using camelCase. So for example, OnLevelSave becomes onLevelSave.
+ *
+ * Lua plugin speed compared to C# plugin speed will be slower, however,
+ * the cost of the speed is repaid by the time it takes to write
+ * a plugin with Lua's simplicity (and less special character spam).
+ * 
+ * 
  */
 
 //reference System.dll
@@ -11,6 +29,7 @@ using MCGalaxy.Games;
 using MCGalaxy.Network;
 using MCGalaxy.Blocks.Physics;
 using MCGalaxy.Events;
+using MCGalaxy.Events.EntityEvents;
 using MCGalaxy.Events.GameEvents;
 using MCGalaxy.Events.GroupEvents;
 using MCGalaxy.Events.LevelEvents;
@@ -47,6 +66,16 @@ namespace MCGalaxy {
    
 		public override void Load(bool startup) {
 
+                    #region Entitiy register
+                    OnTabListEntryAddedEvent.Register(HandleTabListEntryAdded, Priority.Critical);
+                    OnTabListEntryRemovedEvent.Register(HandleTabListEntryRemoved, Priority.Critical);
+
+                    OnEntitySpawnedEvent.Register(HandleEntitySpawned, Priority.Critical);
+                    OnEntityDespawnedEvent.Register(HandleEntityDespawned, Priority.Critical);
+
+                    OnSendingModelEvent.Register(HandleSendingModel, Priority.Critical);
+                    OnGettingCanSeeEntityEvent.Register(HandleGettingCanSeeEntity, Priority.Critical);
+                    #endregion Entity register
                     #region Games register
                     OnStateChangedEvent.Register(HandleStateChanged, Priority.Critical);
                     OnMapsChangedEvent.Register(HandleMapsChanged, Priority.Critical);
@@ -170,6 +199,49 @@ namespace MCGalaxy {
                     this.Call("load", startup);
                 }
 
+                #region Economy
+                #endregion Economy
+                #region Entity
+
+                void HandleTabListEntryAdded(Entity e, ref string tabName, ref string tabGroup, Player dst) {
+                    LuaContainer tabName_c = new LuaContainer((object) tabName);
+                    LuaContainer tabGroup_c = new LuaContainer((object) tabGroup);
+                    this.Call("onTabListEntryAdded", e, tabName_c, tabGroup_c, dst);
+                    tabName = (string) tabName_c.contained;
+                    tabGroup = (string) tabGroup_c.contained;
+                }
+
+                void HandleTabListEntryRemoved(Entity e, Player dst) {
+                    this.Call("onTabListEntryRemoved", e, dst);
+                }
+
+                void HandleEntitySpawned(Entity e, ref string name, ref string skin, ref string model, Player dst) {
+                    LuaContainer name_c = new LuaContainer((object) name);
+                    LuaContainer skin_c = new LuaContainer((object) skin);
+                    LuaContainer model_c = new LuaContainer((object) model);
+                    this.Call("onEntitySpawned", e, name_c, skin_c, model_c, dst);
+                    name = (string) name_c.contained;
+                    skin = (string) skin_c.contained;
+                    model = (string) model_c.contained;
+                }
+
+                void HandleEntityDespawned(Entity e, Player dst) {
+                    this.Call("onEntityDespawned", e, dst);
+                }
+
+                void HandleSendingModel(Entity e, ref string model, Player dst) {
+                    LuaContainer model_c = new LuaContainer((object) model);
+                    this.Call("onSendingModel", e, model_c, dst);
+                    model = (string) model_c.contained;
+                }
+
+                void HandleGettingCanSeeEntity(Player p, ref bool canSee, Entity target) {
+                    LuaContainer canSee_c = new LuaContainer((object) canSee);
+                    this.Call("onGettingCanSeeEntity", p, canSee_c, target);
+                    canSee = (bool) canSee_c.contained;
+                }
+                
+                #endregion Entity
                 #region Game
                 
                 void HandleStateChanged(IGame game) {
@@ -470,6 +542,16 @@ namespace MCGalaxy {
                     Command.Unregister(Command.Find("RunLua"));
                     Command.Unregister(Command.Find("Lua")); 
 
+                    #region Entitiy unregister
+                    OnTabListEntryAddedEvent.Unregister(HandleTabListEntryAdded);
+                    OnTabListEntryRemovedEvent.Unregister(HandleTabListEntryRemoved);
+
+                    OnEntitySpawnedEvent.Unregister(HandleEntitySpawned);
+                    OnEntityDespawnedEvent.Unregister(HandleEntityDespawned);
+
+                    OnSendingModelEvent.Unregister(HandleSendingModel);
+                    OnGettingCanSeeEntityEvent.Unregister(HandleGettingCanSeeEntity);
+                    #endregion Entity unregister
                     #region Games unregister
                     OnStateChangedEvent.Unregister(HandleStateChanged);
                     OnMapsChangedEvent.Unregister(HandleMapsChanged);

@@ -29,6 +29,7 @@ using MCGalaxy.Games;
 using MCGalaxy.Network;
 using MCGalaxy.Blocks.Physics;
 using MCGalaxy.Events;
+using MCGalaxy.Events.EconomyEvents;
 using MCGalaxy.Events.EntityEvents;
 using MCGalaxy.Events.GameEvents;
 using MCGalaxy.Events.GroupEvents;
@@ -66,6 +67,10 @@ namespace MCGalaxy {
    
 		public override void Load(bool startup) {
 
+                    #region Economy register
+                    OnMoneyChangedEvent.Register(HandleMoneyChanged, Priority.Critical);
+                    OnEcoTransactionEvent.Register(HandleEcoTransaction, Priority.Critical);
+                    #endregion Economy register
                     #region Entitiy register
                     OnTabListEntryAddedEvent.Register(HandleTabListEntryAdded, Priority.Critical);
                     OnTabListEntryRemovedEvent.Register(HandleTabListEntryRemoved, Priority.Critical);
@@ -200,6 +205,15 @@ namespace MCGalaxy {
                 }
 
                 #region Economy
+
+                void HandleMoneyChanged(Player p) {
+                    this.Call("onMoneyChanged", p);
+                }
+
+                void HandleEcoTransaction(EcoTransaction transaction) {
+                    this.Call("onEcoTransaction", transaction);
+                }
+
                 #endregion Economy
                 #region Entity
 
@@ -542,6 +556,10 @@ namespace MCGalaxy {
                     Command.Unregister(Command.Find("RunLua"));
                     Command.Unregister(Command.Find("Lua")); 
 
+                    #region Economy unregister
+                    OnMoneyChangedEvent.Unregister(HandleMoneyChanged);
+                    OnEcoTransactionEvent.Unregister(HandleEcoTransaction);
+                    #endregion Economy unregister
                     #region Entitiy unregister
                     OnTabListEntryAddedEvent.Unregister(HandleTabListEntryAdded);
                     OnTabListEntryRemovedEvent.Unregister(HandleTabListEntryRemoved);

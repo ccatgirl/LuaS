@@ -686,9 +686,17 @@ namespace MCGalaxy {
             public override string type { get { return "Scripting"; } }
 
             public override void Use (Player p, string args) {
-                //Lua state = new Lua();
-                //LuaTable res = (LuaTable)state.DoFile(args)[0];
-                //state.Close();
+                Lua state = new Lua();
+                state.LoadCLRPackage();
+                state.DoString(@"
+                        MCGalaxy = import (""MCGalaxy_"", ""MCGalaxy"")
+                ");
+                object[] rvals = state.DoString(args);
+                p.Message("Returned values:");
+                foreach (object o in rvals) {
+                    p.Message(o.ToString());
+                }
+                state.Close();
             }
 
             public override void Help (Player p) {
@@ -708,13 +716,16 @@ namespace MCGalaxy {
                     if (words.Length <= 1)
                         return;
 
-                    if (File.Exists("lua/" + words[1].ToLower() + "_plugin.lua")) {
+                    if (File.Exists("lua/plugins/" + words[1].ToLower() + "_plugin.lua")) {
                         p.Message("Unfortunately that file already exists. Try another file name!");
                     }
                     else {
-                        Util.TextFile file = new Util.TextFile("lua/" + words[1].ToLower() + "_plugin.lua",
+                        Util.TextFile file = new Util.TextFile("lua/plugins/" + words[1].ToLower() + "_plugin.lua",
                                 String.Format(@"--[[
   Lua plugin skeleton.
+
+  Please read the LuaS readme for the details
+  on Lua APIs.
 ]]
 
 -- You are advised to make every 
@@ -723,7 +734,7 @@ namespace MCGalaxy {
 -- Lua state/context
 local {0}Plugin = Plugin ""{0}""
 
-function  {0}Plugin.load(startup)
+function {0}Plugin.load(startup)
     -- Put what you would put into the C# Load method here.
     if startup then
         -- All of MCGalaxy's API is accessible
@@ -758,7 +769,7 @@ return {0}Plugin ",
             }
 
             public override void Help (Player p) {
-                p.Message(@"A rather more advanced lua command.");
+                p.Message(@"Useless for now, just creates plugin skeletons.");
             }
 
         }

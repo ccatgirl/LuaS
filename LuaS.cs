@@ -58,9 +58,9 @@ namespace MCGalaxy {
 
 		public override string MCGalaxy_Version { get { return "1.9.4.8"; } }
 
-		public override string welcome { get { return "Loaded Message!"; } }
+		public override string welcome { get { return "LuaS loaded."; } }
 
-		public override string creator { get { return "[MCGalaxy] With Grapes"; } }
+		public override string creator { get { return "catgirl"; } }
 
                 public override int build { get { return 1; } }
 

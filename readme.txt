@@ -21,3 +21,15 @@ This plugin is also in open testing, it is NOT stable at all.
 If you experience any crashes or errors, please, open an issue.
 
 You can also run Lua code directly from chat/messageblocks using /RunLua <code>
+
+--- Installing ---
+You will need
+  liblua54.so (Assuming you're running a Linux server. You might need another file)
+  KeraLua.dll (net46) https://www.nuget.org/packages/KeraLua/
+  NLua.dll (net46) https://www.nuget.org/packages/NLua/
+  System.Net.Sockets (net46) https://www.nuget.org/packages/System.Net.Sockets/
+in the root directory of your server.
+
+Then you should be able to successfully /pcompile the plugin.
+Please do not download random ZIPs on the internet that claim to have
+the plugin. They're likely to have malware .dlls/.sos so stay safe.

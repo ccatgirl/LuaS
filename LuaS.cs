@@ -61,7 +61,9 @@ namespace MCGalaxy {
 		public override string welcome { get { return "Loaded Message!"; } }
 
 		public override string creator { get { return "[MCGalaxy] With Grapes"; } }
-                
+
+                public override int build { get { return 1; } }
+
                 private Lua state;
                 private List<LuaTable> plugins;  
    

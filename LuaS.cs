@@ -67,6 +67,10 @@ namespace MCGalaxy {
    
 		public override void Load(bool startup) {
 
+                    Directory.CreateDirectory("./lua");
+                    Directory.CreateDirectory("./lua/plugins");
+                    Directory.CreateDirectory("./lua/commands");
+
                     #region Economy register
                     OnMoneyChangedEvent.Register(HandleMoneyChanged, Priority.Critical);
                     OnEcoTransactionEvent.Register(HandleEcoTransaction, Priority.Critical);
@@ -179,7 +183,7 @@ namespace MCGalaxy {
                     Command.Register(new CmdRunLua());
                     Command.Register(new CmdLua());
 
-                    string[] paths = Directory.GetFiles("lua", "*.lua", SearchOption.TopDirectoryOnly);
+                    string[] paths = Directory.GetFiles("lua/plugins", "*.lua", SearchOption.TopDirectoryOnly);
 
                     foreach (string i in paths) {
 
@@ -389,6 +393,12 @@ namespace MCGalaxy {
 
                 void HandlePlayerCommand(Player p, string cmd, string args, CommandData data) {
                     this.Call("onPlayerCommand", p, cmd, args, data);
+                    string fullpath = "lua/commands/" + cmd.ToLower() + ".lua";
+                    if (File.Exists(fullpath)) {
+                        LuaFunction func = (LuaFunction) this.state.DoFile(fullpath)[0];
+                        func.Call(p, cmd, args, data);
+                        p.cancelcommand = true;
+                    }
                 }
 
                 void HandlePlayerConnect(Player p) {

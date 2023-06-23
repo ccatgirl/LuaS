@@ -24,6 +24,7 @@
 //reference System.dll
 //reference System.Net.Sockets.dll
 //reference NLua.dll
+//reference KeraLua.dll
 
 using MCGalaxy.Games;
 using MCGalaxy.Network;
@@ -42,6 +43,7 @@ using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Collections.Generic;
+using System.Text;
 using NLua;
 
 namespace MCGalaxy {
@@ -60,118 +62,120 @@ namespace MCGalaxy {
 
 		public override string welcome { get { return "LuaS loaded."; } }
 
-		public override string creator { get { return "catgirl"; } }
+		public override string creator { get { return "someone and cry in a corner because you can't do anything"; } }
 
                 public override int build { get { return 1; } }
 
+                public static string prefix = "plugins/";
                 private Lua state;
                 private List<LuaTable> plugins;  
    
 		public override void Load(bool startup) {
 
-                    Directory.CreateDirectory("./lua");
-                    Directory.CreateDirectory("./lua/plugins");
-                    Directory.CreateDirectory("./lua/commands");
-
+                    Directory.CreateDirectory(prefix + "lua");
+                    Directory.CreateDirectory(prefix + "lua/plugins");
+                    Directory.CreateDirectory(prefix + "lua/commands");
+                    
                     #region Economy register
-                    OnMoneyChangedEvent.Register(HandleMoneyChanged, Priority.Critical);
-                    OnEcoTransactionEvent.Register(HandleEcoTransaction, Priority.Critical);
+                    //OnMoneyChangedEvent.Register(HandleMoneyChanged, Priority.Critical);
+                    //OnEcoTransactionEvent.Register(HandleEcoTransaction, Priority.Critical);
                     #endregion Economy register
                     #region Entitiy register
-                    OnTabListEntryAddedEvent.Register(HandleTabListEntryAdded, Priority.Critical);
-                    OnTabListEntryRemovedEvent.Register(HandleTabListEntryRemoved, Priority.Critical);
+                    //OnTabListEntryAddedEvent.Register(HandleTabListEntryAdded, Priority.Critical);
+                    //OnTabListEntryRemovedEvent.Register(HandleTabListEntryRemoved, Priority.Critical);
 
-                    OnEntitySpawnedEvent.Register(HandleEntitySpawned, Priority.Critical);
-                    OnEntityDespawnedEvent.Register(HandleEntityDespawned, Priority.Critical);
+                    //OnEntitySpawnedEvent.Register(HandleEntitySpawned, Priority.Critical);
+                    //OnEntityDespawnedEvent.Register(HandleEntityDespawned, Priority.Critical);
 
-                    OnSendingModelEvent.Register(HandleSendingModel, Priority.Critical);
-                    OnGettingCanSeeEntityEvent.Register(HandleGettingCanSeeEntity, Priority.Critical);
+                    //OnSendingModelEvent.Register(HandleSendingModel, Priority.Critical);
+                    //OnGettingCanSeeEntityEvent.Register(HandleGettingCanSeeEntity, Priority.Critical);
                     #endregion Entity register
                     #region Games register
-                    OnStateChangedEvent.Register(HandleStateChanged, Priority.Critical);
-                    OnMapsChangedEvent.Register(HandleMapsChanged, Priority.Critical);
+                    //OnStateChangedEvent.Register(HandleStateChanged, Priority.Critical);
+                    //OnMapsChangedEvent.Register(HandleMapsChanged, Priority.Critical);
                     #endregion Games register
                     #region Group register 
-                    OnGroupLoadedEvent.Register(HandleGroupLoaded, Priority.Critical);
-                    OnGroupLoadEvent.Register(HandleGroupLoad, Priority.Critical); 
-                    OnGroupSaveEvent.Register(HandleGroupSave, Priority.Critical); 
-                    OnChangingGroupEvent.Register(HandleChangingGroup, Priority.Critical);
+                    //OnGroupLoadedEvent.Register(HandleGroupLoaded, Priority.Critical);
+                    //OnGroupLoadEvent.Register(HandleGroupLoad, Priority.Critical); 
+                    //OnGroupSaveEvent.Register(HandleGroupSave, Priority.Critical); 
+                    //OnChangingGroupEvent.Register(HandleChangingGroup, Priority.Critical);
                     #endregion Group register
                     #region Level register
-                    OnLevelLoadedEvent.Register(HandleLevelLoaded, Priority.Critical);
-                    OnLevelLoadEvent.Register(HandleLevelLoad, Priority.Critical);
+                    //OnLevelLoadedEvent.Register(HandleLevelLoaded, Priority.Critical);
+                    //OnLevelLoadEvent.Register(HandleLevelLoad, Priority.Critical);
                     
-                    OnLevelSaveEvent.Register(HandleLevelSave, Priority.Critical);
+                    //OnLevelSaveEvent.Register(HandleLevelSave, Priority.Critical);
                     
-                    OnLevelUnloadEvent.Register(HandleLevelUnload, Priority.Critical);
+                    //OnLevelUnloadEvent.Register(HandleLevelUnload, Priority.Critical);
                     
-                    OnLevelAddedEvent.Register(HandleLevelAdded, Priority.Critical);
-                    OnLevelRemovedEvent.Register(HandleLevelRemoved, Priority.Critical);
+                    //OnLevelAddedEvent.Register(HandleLevelAdded, Priority.Critical);
+                    //OnLevelRemovedEvent.Register(HandleLevelRemoved, Priority.Critical);
                     
-                    OnPhysicsStateChangedEvent.Register(HandlePhysicsStateChanged, Priority.Critical);
-                    OnPhysicsUpdateEvent.Register(HandlePhysicsUpdate, Priority.Critical);
+                    //OnPhysicsStateChangedEvent.Register(HandlePhysicsStateChanged, Priority.Critical);
+                    //OnPhysicsUpdateEvent.Register(HandlePhysicsUpdate, Priority.Critical);
                     
-                    OnLevelRenamedEvent.Register(HandleLevelRenamed, Priority.Critical);
-                    OnLevelCopiedEvent.Register(HandleLevelCopied, Priority.Critical);
-                    OnLevelDeletedEvent.Register(HandleLevelDeleted, Priority.Critical);
+                    //OnLevelRenamedEvent.Register(HandleLevelRenamed, Priority.Critical);
+                    //OnLevelCopiedEvent.Register(HandleLevelCopied, Priority.Critical);
+                    //OnLevelDeletedEvent.Register(HandleLevelDeleted, Priority.Critical);
 
-                    OnBlockHandlersUpdatedEvent.Register(HandleBlockHandlersUpdated, Priority.Critical);
+                    //OnBlockHandlersUpdatedEvent.Register(HandleBlockHandlersUpdated, Priority.Critical);
                     //OnMainLevelChangingEvent.Register(HandleMainLevelChanging, Priority.Critical); //TODO: Once MCGalaxy upgrades, update this event
                     #endregion Level register
                     #region ModAction register
-                    OnModActionEvent.Register(HandleModAction, Priority.Critical);
+                    //OnModActionEvent.Register(HandleModAction, Priority.Critical);
                     #endregion ModAction register
                     #region PlayerDB register
-                    OnInfoSaveEvent.Register(HandleInfoSave, Priority.Critical);
-                    OnInfoSwapEvent.Register(HandleInfoSwap, Priority.Critical);
+                    //OnInfoSaveEvent.Register(HandleInfoSave, Priority.Critical);
+                    //OnInfoSwapEvent.Register(HandleInfoSwap, Priority.Critical);
                     #endregion PlayerDB register
                     #region Player register
                     OnPlayerChatEvent.Register(HandlePlayerChat, Priority.Critical);
-                    OnPlayerMoveEvent.Register(HandlePlayerMove, Priority.Critical);
+                    //OnPlayerMoveEvent.Register(HandlePlayerMove, Priority.Critical);
                     OnPlayerCommandEvent.Register(HandlePlayerCommand, Priority.Critical);
                     // Connecting
-                    OnPlayerConnectEvent.Register(HandlePlayerConnect, Priority.Critical);
-                    OnPlayerStartConnectingEvent.Register(HandlePlayerStartConnecting, Priority.Critical);
+                    //OnPlayerConnectEvent.Register(HandlePlayerConnect, Priority.Critical);
+                    //OnPlayerStartConnectingEvent.Register(HandlePlayerStartConnecting, Priority.Critical);
                     OnPlayerFinishConnectingEvent.Register(HandlePlayerFinishConnecting, Priority.Critical);
                     // Death
-                    OnPlayerDyingEvent.Register(HandlePlayerDying, Priority.Critical);
-                    OnPlayerDiedEvent.Register(HandlePlayerDied, Priority.Critical);
+                    //OnPlayerDyingEvent.Register(HandlePlayerDying, Priority.Critical);
+                    //OnPlayerDiedEvent.Register(HandlePlayerDied, Priority.Critical);
                     
-                    OnPlayerDisconnectEvent.Register(HandlePlayerDisconnect, Priority.Critical);
+                    //OnPlayerDisconnectEvent.Register(HandlePlayerDisconnect, Priority.Critical);
                     
-                    OnBlockChangingEvent.Register(HandleBlockChanging, Priority.Critical);
-                    OnBlockChangedEvent.Register(HandleBlockChanged, Priority.Critical);
+                    //OnBlockChangingEvent.Register(HandleBlockChanging, Priority.Critical);
+                    //OnBlockChangedEvent.Register(HandleBlockChanged, Priority.Critical);
 
-                    OnPlayerClickEvent.Register(HandlePlayerClick, Priority.Critical);
+                    //OnPlayerClickEvent.Register(HandlePlayerClick, Priority.Critical);
 
-                    OnMessageRecievedEvent.Register(HandleMessageReceived, Priority.Critical);
+                    //OnMessageRecievedEvent.Register(HandleMessageReceived, Priority.Critical);
 
-                    OnSentMapEvent.Register(HandleSentMap, Priority.Critical);
-                    OnJoiningLevelEvent.Register(HandleJoiningLevel, Priority.Critical);
-                    OnJoinedLevelEvent.Register(HandleJoinedLevel, Priority.Critical);
+                    //OnSentMapEvent.Register(HandleSentMap, Priority.Critical);
+                    //OnJoiningLevelEvent.Register(HandleJoiningLevel, Priority.Critical);
+                    //OnJoinedLevelEvent.Register(HandleJoinedLevel, Priority.Critical);
 
-                    OnPlayerActionEvent.Register(HandlePlayerAction, Priority.Critical);
-                    OnSettingPrefixEvent.Register(HandleSettingPrefix, Priority.Critical);
+                    //OnPlayerActionEvent.Register(HandlePlayerAction, Priority.Critical);
+                    //OnSettingPrefixEvent.Register(HandleSettingPrefix, Priority.Critical);
                     OnGettingMotdEvent.Register(HandleGettingMotd, Priority.Critical);
                     OnSendingMotdEvent.Register(HandleSendingMotd, Priority.Critical);
-                    OnPlayerSpawningEvent.Register(HandlePlayerSpawning, Priority.Critical);
-                    OnChangedZoneEvent.Register(HandleChangedZone, Priority.Critical);
-                    OnGettingCanSeeEvent.Register(HandleGettingCanSee, Priority.Critical);
+                    //OnPlayerSpawningEvent.Register(HandlePlayerSpawning, Priority.Critical);
+                    //OnChangedZoneEvent.Register(HandleChangedZone, Priority.Critical);
+                    //OnGettingCanSeeEvent.Register(HandleGettingCanSee, Priority.Critical);
                     #endregion Player register
                     #region Server register
-                    OnSendingHeartbeatEvent.Register(HandleSendingHeartbeat, Priority.Critical);
-                    OnShuttingDownEvent.Register(HandleShuttingDown, Priority.Critical);
-                    OnConfigUpdatedEvent.Register(HandleConfigUpdated, Priority.Critical);
-                    OnConnectionReceivedEvent.Register(HandleConnectionReceived, Priority.Critical);
+                    //OnSendingHeartbeatEvent.Register(HandleSendingHeartbeat, Priority.Critical);
+                    //OnShuttingDownEvent.Register(HandleShuttingDown, Priority.Critical);
+                    //OnConfigUpdatedEvent.Register(HandleConfigUpdated, Priority.Critical);
+                    //OnConnectionReceivedEvent.Register(HandleConnectionReceived, Priority.Critical);
                     OnChatSysEvent.Register(HandleChatSys, Priority.Critical);
                     OnChatFromEvent.Register(HandleChatFrom, Priority.Critical);
                     OnChatEvent.Register(HandleChat, Priority.Critical);
-                    OnPluginMessageReceivedEvent.Register(HandlePluginMessageReceived, Priority.Critical);
+                    //OnPluginMessageReceivedEvent.Register(HandlePluginMessageReceived, Priority.Critical);
                     #endregion Server register
 
 
                     this.plugins = new List<LuaTable>();
                     this.state = new Lua();
+                    this.state.State.Encoding = Encoding.UTF8;
                     this.state.LoadCLRPackage();
                     this.state.DoString(@"
                             -- Initiate the MCGalaxy namespace.
@@ -185,7 +189,7 @@ namespace MCGalaxy {
                     Command.Register(new CmdRunLua());
                     Command.Register(new CmdLua());
 
-                    string[] paths = Directory.GetFiles("lua/plugins", "*.lua", SearchOption.TopDirectoryOnly);
+                    string[] paths = Directory.GetFiles(prefix + "lua/plugins", "*.lua", SearchOption.TopDirectoryOnly);
 
                     foreach (string i in paths) {
 
@@ -395,13 +399,12 @@ namespace MCGalaxy {
 
                 void HandlePlayerCommand(Player p, string cmd, string args, CommandData data) {
                     this.Call("onPlayerCommand", p, cmd, args, data);
-                    string fullpath = "lua/commands/" + cmd.ToLower() + ".lua";
-                    if (File.Exists(fullpath)) {
-                        LuaFunction func = (LuaFunction) this.state.DoFile(fullpath)[0];
-                        func.Call(p, cmd, args, data);
-                        p.cancelcommand = true;
-                    }
-                }
+                    RunCmd(this.state, p,cmd,args,data);
+                    if (File.Exists(prefix + "lua/commands/" + cmd.ToLower() + ".lua")){
+                                              Logger.Log(LogType.SystemActivity, p.truename + " used /" + cmd.ToLower() + " " + args);
+                                            }
+                
+               }
 
                 void HandlePlayerConnect(Player p) {
                     this.Call("onPlayerConnect", p);
@@ -673,12 +676,27 @@ namespace MCGalaxy {
 		}
 
                 private void Call(string name, params object[] args) {
+                  try {
                     foreach(LuaTable plug in this.plugins) {
                         if (plug[name] != null && plug[name].ToString() == "function") {
                             ((LuaFunction) plug[name]).Call(args);
                         }
                     }
+                  }
+                  catch (NullReferenceException) {}
                 }
+                
+                public static void RunCmd(Lua s, Player p, string cmd, string args, CommandData data, bool cancel = true) {
+                  string fullpath = prefix + "lua/commands/" + cmd.ToLower() + ".lua";
+                    if (File.Exists(fullpath)) {
+                        LuaFunction func = (LuaFunction) s.DoFile(fullpath)[0];
+                        func.Call(p, cmd, args, data);
+                        if (cancel) {
+                            p.cancelcommand = true;
+                        }
+                   }   
+      
+                 }
 
 	}
 
@@ -689,6 +707,7 @@ namespace MCGalaxy {
 
             public override void Use (Player p, string args) {
                 Lua state = new Lua();
+                state.State.Encoding = Encoding.UTF8;
                 state.LoadCLRPackage();
                 state.DoString(@"
                         MCGalaxy = import (""MCGalaxy_"", ""MCGalaxy"")
@@ -718,11 +737,11 @@ namespace MCGalaxy {
                     if (words.Length <= 1)
                         return;
 
-                    if (File.Exists("lua/plugins/" + words[1].ToLower() + "_plugin.lua")) {
+                    if (File.Exists(LuaS.prefix + "lua/plugins/" + words[1].ToLower() + "_plugin.lua")) {
                         p.Message("Unfortunately that file already exists. Try another file name!");
                     }
                     else {
-                        Util.TextFile file = new Util.TextFile("lua/plugins/" + words[1].ToLower() + "_plugin.lua",
+                        Util.TextFile file = new Util.TextFile(LuaS.prefix + "lua/plugins/" + words[1].ToLower() + "_plugin.lua",
                                 String.Format(@"--[[
   Lua plugin skeleton.
 
@@ -767,6 +786,30 @@ return {0}Plugin ",
                         file.EnsureExists();
                         p.Message("Saved the file into lua/" + words[1].ToLower() + "_plugin.lua");
                     }
+                    
+                }
+                else if (args.ToLower().StartsWith("run")) {
+                    string[] words = args.Split(' ');
+                    string cmdargs = "";
+                    for (int k = 2; k < words.Length; k++) {
+                         cmdargs += words[k];
+                         if (!(k +1 == words.Length)) 
+                             cmdargs += " ";
+                    }
+                    Lua state = new Lua();
+                    state.State.Encoding = Encoding.UTF8;
+                    state.LoadCLRPackage();
+                    state.DoString(@"
+                            -- Initiate the MCGalaxy namespace.
+                            MCGalaxy = import (""MCGalaxy_"", ""MCGalaxy"")
+                            
+                            function Plugin(name)
+                                return {__pluginname = name}
+                            end
+                            consoleSandbox = true
+                    ");
+                    
+                    LuaS.RunCmd(state, p, words[1], cmdargs, new CommandData(), false);
                 }
             }
 
